@@ -1,0 +1,42 @@
+# --- Secrets: per-client env files hold API keys and passwords. Only the example is tracked. ---
+.env
+.env.*
+deploy/clients/*.env
+!deploy/clients/example.env
+*.pem
+*.key
+
+# --- Client data: input documents are client property. Only the sample is tracked. ---
+data/*
+!data/sample_invoice.txt
+
+# --- Python ---
+.venv/
+.venv-*/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# --- Local Langflow runs (outside Docker) ---
+*.db
+*.db-journal
+.langflow/
+
+# --- Logs ---
+*.log
+
+# --- Editor / OS / tooling ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.claude/settings.local.json
