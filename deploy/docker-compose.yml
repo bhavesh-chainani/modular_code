@@ -1,0 +1,65 @@
+# One isolated stack per client:
+#   CLIENT=acme docker compose -f deploy/docker-compose.yml up -d --build
+#   CLIENT=acme docker compose -f deploy/docker-compose.yml --profile dev up -d   # + Mailpit test inbox
+#
+# Settings and secrets come from deploy/clients/${CLIENT}.env.
+# Langfuse runs as its own stack (see README) and is reached via LANGFUSE_BASE_URL.
+# Ports bind to 127.0.0.1; put a reverse proxy in front for remote access.
+name: modkit-${CLIENT:-example}
+
+x-client-env: &client-env
+  env_file: clients/${CLIENT:-example}.env
+  extra_hosts:
+    - "host.docker.internal:host-gateway"   # reach a Langfuse stack running on the host
+
+services:
+  langflow:
+    <<: *client-env
+    build:
+      context: ..
+      dockerfile: deploy/langflow.Dockerfile
+    ports:
+      - "127.0.0.1:${LANGFLOW_PORT:-7860}:7860"
+    environment:
+      LANGFLOW_DATABASE_URL: postgresql://langflow:${POSTGRES_PASSWORD:-langflow}@postgres:5432/langflow
+      LANGFLOW_CONFIG_DIR: /app/langflow
+      LANGFLOW_COMPONENTS_PATH: /app/custom_components
+    volumes:
+      - ../components:/app/custom_components:ro
+      - ../data:/data:ro              # client input files, referenced as /data/... in flows
+                                      # (not /app/data: that is Langflow's own writable state dir)
+      - langflow-data:/app/langflow
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: langflow
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-langflow}
+      POSTGRES_DB: langflow
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  modkit-mcp:
+    <<: *client-env
+    build:
+      context: ..
+      dockerfile: deploy/mcp.Dockerfile
+    ports:
+      - "127.0.0.1:${MCP_PORT:-8000}:8000"
+    volumes:
+      - ../data:/data:ro
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit:v1.27
+    profiles: ["dev"]
+    ports:
+      - "127.0.0.1:8025:8025"         # web inbox; SMTP on mailpit:1025 inside the network
+
+volumes:
+  langflow-data:
+  postgres-data:

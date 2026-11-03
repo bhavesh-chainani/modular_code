@@ -1,0 +1,15 @@
+INVOICE #INV-2026-0142
+
+From: Acme Analytics Ltd, 12 Market Street, London
+To:   Northwind Retail
+
+Date: 2026-10-15
+Due:  2026-11-14
+
+Description                         Qty   Unit price   Amount
+Data pipeline build (days)            8      £950.00   £7,600.00
+Dashboard setup                       1    £1,200.00   £1,200.00
+
+Subtotal                                               £8,800.00
+VAT (20%)                                              £1,760.00
+TOTAL DUE                                             £10,560.00

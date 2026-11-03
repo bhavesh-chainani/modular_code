@@ -1,0 +1,35 @@
+[project]
+name = "modkit"
+version = "0.1.0"
+description = "Reusable back-end modules (LLM, extraction, email) exposed as Langflow components and MCP tools."
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+# Kept loose on purpose: modkit is installed inside the Langflow image and must
+# co-exist with whatever versions Langflow pins.
+dependencies = [
+    "litellm>=1.80",
+    "pydantic>=2.10",
+    "pydantic-settings>=2.7",
+    "pypdf>=5",
+    "httpx>=0.27",
+    # 3.15 is what the Langflow image pins; the tracing code is tested on 3.15 and 5.x.
+    "langfuse>=3.15",
+]
+
+[project.optional-dependencies]
+# Separate extra so the Langflow image (which ships its own mcp version) doesn't pull mcp 2.x.
+mcp = ["mcp>=2,<3"]
+dev = ["pytest>=8", "mcp>=2,<3"]
+
+[project.scripts]
+modkit-mcp = "modkit.mcp_server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/modkit"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
